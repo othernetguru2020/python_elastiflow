@@ -25,8 +25,6 @@ parser.add_argument("-w","--source", help="flow source area GENERAL = bdr-gcc ,S
 
 args = parser.parse_args()
 
-print(args.source)
-
 if args.source:
     source = source_area_text(args.source)
 
@@ -63,16 +61,11 @@ else:
     type = args.type
 
 try:
-    # concatenate a string for the Elasticsearch connection
     es_srv_string = es_server + ":" + es_server_port
-    # declare a client instance of the Python Elasticsearch library
     client = Elasticsearch(es_srv_string)
-    # info() method raises error if domain or conn is invalid
-    #print(json.dumps(Elasticsearch.info(client), indent=4), "\n")
 
 except Exception as err:
     print("Elasticsearch() ERROR:", err, "\n")
-    # client is set to none if connection is invalid
     client = None
 
 def pretty(node, indent=0):
@@ -91,17 +84,11 @@ def pretty(node, indent=0):
         return 2
 
 def dict_walk(d,indent=1):
-    #if d['_source']['source']:
-    #    print(d['_source']['source'])
-    #if d['_source']['message']:
-    #    print(d['_source']['message'])
     for key, value in d.items():
         print('\t:' * indent + str(key))
         if isinstance(value, dict):
-            #print(value)
             dict_walk(value, indent + 1)
         else:
-        #    if key == "source" or key == "full_message":
             print('\t --' * (indent + 1) + str(value))
 
 
@@ -117,27 +104,17 @@ def find_latest_indicies(node):
             continue
     graylog_list.sort()
     elastiflow_list.sort()
-    #print(graylog_list[-1],elastiflow_list[-1])
     return graylog_list[-1],elastiflow_list[-1]
 
 def list_hits(hit_dict):
-    #all_hits = graylog_results['hits']['hits']
     all_hits = hit_dict['hits']['hits']
-    # see how many "hits" it returned using the len() function
     print ("total hits using 'size' param:", len(all_hits))
-    # iterate the nested dictionaries inside the ["hits"]["hits"] list
-    #dict_walk(all_hits)
-    #print(json.dumps(es_results,indent=4))
     for num, doc in enumerate(all_hits):
-        #print ("DOC ID:", doc["_id"], "--->", doc, type(doc), "\n")
         print(doc)
         dict_walk(doc)
 
 def search_elasticsearch_data(client,type, page=0):
-    # User makes a request on client side
-    #type can be flow or log
     index_raw = client.indices.get_alias()
-    #print(index_raw)
     graylog_index,elastiflow_index = find_latest_indicies(index_raw)
 
     if client != None:
@@ -152,23 +129,9 @@ def search_elasticsearch_data(client,type, page=0):
         else:
             return "Type Error"
     return result
-#"field": "flow.client_addr"
-#flow.client_autonomous_system
-# Take the user's parameters and put them into a Python
-# dictionary structured like an Elasticsearch query:
-
-#print(query)
 
 es_results = {}
 es_results = search_elasticsearch_data(client, type)
-#print(json.dumps(es_results,sort_keys=True, indent=4))
-#list_hits(es_results)
-#print("total hits:", len(es_results["hits"]["hits"]))
 for k in es_results["aggregations"]["genres"]["buckets"]:
     print(k["key"],k["doc_count"])
 print(es_results["aggregations"]["genres"]["buckets"])
-
-
-#list_hits(sflow_results["hits"]["hits"])
-#list_hits(graylog_results["hits"]["hits"])
-
