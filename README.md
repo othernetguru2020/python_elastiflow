@@ -1,1 +1,1 @@
-This project is to have remote access to generate cli output of elasticsearch indexes
+This project uses python to generate cli output of elasticsearch indexes for further processing
